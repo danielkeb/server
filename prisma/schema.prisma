@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id                     String             @id @default(uuid())
+  firstName              String
+  lastName               String
+  gender                 Gender?
+  age                    Int?
+  username               String             @unique
+  email                  String             @unique
+  emailVerified          Boolean            @default(false)
+  bio                    String?
+  socialLinks            Json[]
+  education              Education[]
+  password               String?
+  role                   Roles              @relation(fields: [roleId], references: [id])
+  roleId                 String
+  location               Locations?         @relation(fields: [locationId], references: [id])
+  locationId             String?
+  profilePicture         Files?             @relation("profilePic", fields: [profilePictureId], references: [id])
+  profilePictureId       String?            @unique
+  cv                     Files?             @relation("cv", fields: [cvId], references: [id])
+  cvId                   String?            @unique
+  organization           Organizations?     @relation(fields: [organizationId], references: [id])
+  organizationId         String?            @unique
+  lastLoggedInAt         DateTime           @default(now())
+  verified               Boolean            @default(false)
+  token                  String? // JWT token used during signin
+  verificationCode       String? // Short code used to verify the email address
+  resetCode              String? // Short code used to reset the password
+  locationPreference     LocationPreference @default(BOTH)
+  timePreference         TimePreference     @default(BOTH)
+  notificationPreference Json[]
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  isActive               Boolean            @default(true)
+  skills                 Skills[]
+  badges                 UsersToBadges[]
+  applications           Applications[]
+  certificates           Certificates[]
+  donations              Donations[]
+  messages               Messages[]
+  reviews                Reviews[]
+  reports                Reports[]
+  tasks                  Tasks[]
+}
+
+model Certificates {
+  id        String    @id @default(uuid())
+  user      Users?    @relation(fields: [userId], references: [id])
+  userId    String?
+  project   Projects? @relation(fields: [projectId], references: [id])
+  projectId String?
+  dateGiven DateTime  @default(now())
+}
+
+model Roles {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       Users[]
+}
+
+model Locations {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  code          String          @unique
+  users         Users[]
+  projects      Projects[]
+  organizations Organizations[]
+}
+
+model Projects {
+  id                 String             @id @default(uuid())
+  organization       Organizations      @relation(fields: [organizationId], references: [id])
+  organizationId     String
+  title              String
+  description        String
+  isActive           Boolean            @default(true)
+  location           Locations?         @relation(fields: [locationId], references: [id])
+  locationId         String?
+  startDate          DateTime
+  endDate            DateTime
+  timeCommitment     TimePreference
+  status             ProjectStatus      @default(NOT_STARTED)
+  provideCertificate Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  skillsRequired     SkillsToProjects[]
+  applications       Applications[]
+  donations          Donations[]
+  messages           Messages[]
+  tasks              Tasks[]
+  reviews            Reviews[]
+  Certificates       Certificates[]
+}
+
+model Organizations {
+  id           String     @id @default(uuid())
+  name         String
+  mission      String?
+  aboutUs      String?
+  websiteUrl   String?
+  isActive     Boolean    @default(true)
+  location     Locations  @relation(fields: [locationId], references: [id])
+  locationId   String
+  contactEmail String?
+  contactPhone String
+  foundingDate DateTime?
+  logo         Files?     @relation("logo", fields: [logoId], references: [id])
+  logoId       String?    @unique
+  permit       Files?     @relation("permit", fields: [permitId], references: [id])
+  permitId     String?    @unique
+  verified     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  owner        Users?
+  projects     Projects[]
+}
+
+model Applications {
+  id        String            @id @default(uuid())
+  user      Users             @relation(fields: [userId], references: [id])
+  userId    String
+  project   Projects          @relation(fields: [projectId], references: [id])
+  projectId String
+  message   String
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+}
+
+model Donations {
+  id        String   @id @default(uuid())
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    String
+  project   Projects @relation(fields: [projectId], references: [id])
+  projectId String
+  amount    Decimal
+  date      DateTime
+}
+
+model Files {
+  id                 String         @id @default(uuid())
+  filename           String
+  fileType           String
+  filePath           String
+  size               Decimal
+  createdAt          DateTime       @default(now())
+  organizationLogo   Organizations? @relation("logo")
+  organizarionPermit Organizations? @relation("permit")
+  userCv             Users?         @relation("cv")
+  userProfilePics    Users?         @relation("profilePic")
+}
+
+model Messages {
+  id          String             @id @default(uuid())
+  sender      Users              @relation(fields: [senderId], references: [id])
+  senderId    String
+  project     Projects           @relation(fields: [projectId], references: [id])
+  projectId   String
+  content     String
+  contentType MessageContentType
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model Reviews {
+  id        String   @id @default(uuid())
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    String
+  project   Projects @relation(fields: [projectId], references: [id])
+  projectId String
+  comment   String
+  rating    Int
+  createdAt DateTime @default(now())
+}
+
+model Skills {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  users       Users[]
+  projects    SkillsToProjects[]
+  category    SkillCategories    @relation(fields: [categoryId], references: [id])
+  categoryId  String
+}
+
+model SkillCategories {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  skills      Skills[]
+}
+
+model Badges {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  threshold   Int
+  description String
+  users       UsersToBadges[]
+}
+
+model Reports {
+  id          String             @id @default(uuid())
+  reporter    Users              @relation(fields: [reporterId], references: [id])
+  reporterId  String
+  contentType ReportContentTypes
+  contentId   String
+  reason      ReportReasons
+  description String?
+  status      ReportStatus
+  createdAt   DateTime           @default(now())
+}
+
+model Tasks {
+  id           String     @id @default(uuid())
+  project      Projects   @relation(fields: [projectId], references: [id])
+  projectId    String
+  title        String
+  description  String?
+  priority     Int        @default(4)
+  status       TaskStatus @default(OPEN)
+  deadline     DateTime
+  assignedTo   Users?     @relation(fields: [assignedToId], references: [id])
+  assignedToId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Education {
+  id          String    @id @default(uuid())
+  field       String
+  institute   String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  Users       Users?    @relation(fields: [usersId], references: [id])
+  usersId     String?
+}
+
+// many to many relationship tables
+model UsersToBadges {
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    String
+  badge     Badges   @relation(fields: [badgeId], references: [id])
+  badgeId   String
+  dateGiven DateTime @default(now())
+
+  @@id([userId, badgeId])
+}
+
+model SkillsToProjects {
+  skill     Skills   @relation(fields: [skillId], references: [id])
+  skillId   String
+  project   Projects @relation(fields: [projectId], references: [id])
+  projectId String
+  vacancies Int      @default(1)
+
+  @@id([skillId, projectId])
+}
+
+// enums
+enum LocationPreference {
+  IN_PERSON
+  REMOTE
+  BOTH
+}
+
+enum TimePreference {
+  SHORT_TERM
+  LONG_TERM
+  BOTH
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MessageContentType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+enum TaskStatus {
+  OPEN
+  COMPLETED
+}
+
+enum ProjectStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DONE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ReportContentTypes {
+  USER
+  ORGANIZATION
+  PROJECT
+  REVIEW
+}
+
+enum ReportReasons {
+  FAKE
+  SCAM
+  INAPPROPRIATE_CONTENT
+  SPAM
+  IMPERSONATION
+  PRIVACY_VIOLATION
+  OTHER
+}
+
+enum ReportStatus {
+  ACTIVE
+  RESOLVED
+}
