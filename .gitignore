@@ -39,3 +39,8 @@ lerna-debug.log*
 
 # Vercel files
 .vercel
+# IDE settings
+/.vscode/
+
+# Environment variables
+.env
