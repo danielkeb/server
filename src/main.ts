@@ -8,7 +8,7 @@ import {
 import * as fs from 'fs-extra';
 import { AppModule } from './app.module';
 
-const PORT = 3333 || 4000;
+const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
