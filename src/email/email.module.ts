@@ -8,9 +8,9 @@ import { EmailService } from './email.service';
   imports: [
     MailerModule.forRootAsync({
       useFactory: async () => {
-        const clientId = process.env.CLIENT_ID;
-        const clientSecret = process.env.CLIENT_SECRET;
-        const refreshToken = process.env.REFRESH_TOKEN;
+        // const clientId = process.env.CLIENT_ID;
+        // const clientSecret = process.env.CLIENT_SECRET;
+        // const refreshToken = process.env.REFRESH_TOKEN;
         // const redirectUri = process.env.REDIRECT_URI;
         const senderEmail = process.env.SENDER_EMAIL;
 
@@ -45,10 +45,10 @@ import { EmailService } from './email.service';
             auth: {
               type: 'OAuth2',
               user: senderEmail,
-              clientId: clientId,
-              clientSecret: clientSecret,
-              refreshToken: refreshToken,
-              accessToken: process.env.ACCESS_TOKEN,
+              // clientId: clientId,
+              // clientSecret: clientSecret,
+              // refreshToken: refreshToken,
+              // accessToken: process.env.ACCESS_TOKEN,
             },
           },
           defaults: {
